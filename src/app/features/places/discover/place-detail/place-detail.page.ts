@@ -70,7 +70,7 @@ export class PlaceDetailPage implements OnInit {
     this.modalController
       .create({
         component: CreateBookingComponent,
-        componentProps: { selectedPlace: this.place }
+        componentProps: { selectedPlace: this.place, selectedMode: mode }
       })
       .then(modal => {
         modal.present();
