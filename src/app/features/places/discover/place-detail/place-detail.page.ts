@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import {
   NavController,
   ModalController,
@@ -8,17 +8,18 @@ import {
 import { CreateBookingComponent } from '../../../../features/bookings/create-booking/create-booking.component';
 import { Place } from '../../../../shared/models/place.model';
 import { PlaceService } from '../../../../core/services/place.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-place-detail',
   templateUrl: './place-detail.page.html',
   styleUrls: ['./place-detail.page.scss']
 })
-export class PlaceDetailPage implements OnInit {
+export class PlaceDetailPage implements OnInit, OnDestroy {
   place: Place;
+  private placesSub: Subscription;
 
   constructor(
-    private router: Router,
     private navCtrl: NavController,
     private modalController: ModalController,
     private route: ActivatedRoute,
@@ -29,10 +30,14 @@ export class PlaceDetailPage implements OnInit {
   ngOnInit() {
     this.route.paramMap.subscribe(paramMap => {
       if (!paramMap.has('placeId')) {
-        this.navCtrl.navigateBack('/places/tabs/offers');
+        this.navCtrl.navigateBack('/places/tabs/discover');
         return;
       }
-      this.place = this.placeService.getPlace(paramMap.get('placeId'));
+      this.placesSub = this.placeService
+        .getPlace(paramMap.get('placeId'))
+        .subscribe(place => {
+          this.place = place;
+        });
     });
   }
 
@@ -65,8 +70,6 @@ export class PlaceDetailPage implements OnInit {
   }
 
   openBookingModal(mode: 'select' | 'random') {
-    console.log(mode);
-
     this.modalController
       .create({
         component: CreateBookingComponent,
@@ -83,5 +86,11 @@ export class PlaceDetailPage implements OnInit {
           console.log('Booked!');
         }
       });
+  }
+
+  ngOnDestroy(): void {
+    if (this.placesSub) {
+      this.placesSub.unsubscribe();
+    }
   }
 }
