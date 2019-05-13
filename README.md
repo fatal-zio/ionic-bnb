@@ -1,6 +1,9 @@
 # ionic-bnb
 Hotel/BnB app written using Ionic 4 and Angular 7.
 
+Following Udemy course:
+https://www.udemy.com/ionic-2-the-practical-guide-to-building-ios-android-apps/
+
 ## Technology Stack
 
 Front End
