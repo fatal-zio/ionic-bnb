@@ -3,12 +3,14 @@ import { ActivatedRoute } from '@angular/router';
 import {
   NavController,
   ModalController,
-  ActionSheetController
+  ActionSheetController,
+  LoadingController
 } from '@ionic/angular';
 import { CreateBookingComponent } from '../../../../features/bookings/create-booking/create-booking.component';
 import { Place } from '../../../../shared/models/place.model';
 import { PlaceService } from '../../../../core/services/place.service';
 import { Subscription } from 'rxjs';
+import { BookingService } from 'src/app/core/services/booking.service';
 
 @Component({
   selector: 'app-place-detail',
@@ -24,7 +26,9 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
     private modalController: ModalController,
     private route: ActivatedRoute,
     private placeService: PlaceService,
-    private actionSheetController: ActionSheetController
+    private actionSheetController: ActionSheetController,
+    private bookingService: BookingService,
+    private loadingController: LoadingController
   ) {}
 
   ngOnInit() {
@@ -80,10 +84,28 @@ export class PlaceDetailPage implements OnInit, OnDestroy {
         return modal.onDidDismiss();
       })
       .then(resultData => {
-        console.log(resultData.data, resultData.role);
-
         if (resultData.role === 'confirm') {
-          console.log('Booked!');
+          this.loadingController
+            .create({ message: 'Booking place...' })
+            .then(loadingElement => {
+              loadingElement.present();
+
+              const data = resultData.data.bookingData;
+              this.bookingService
+                .addBooking(
+                  this.place.id,
+                  this.place.title,
+                  this.place.imageUrl,
+                  data.firstName,
+                  data.lastName,
+                  data.guestNumber,
+                  data.startDate,
+                  data.endDate
+                )
+                .subscribe(() => {
+                  loadingElement.dismiss();
+                });
+            });
         }
       });
   }
