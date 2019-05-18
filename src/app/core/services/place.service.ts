@@ -2,12 +2,15 @@ import { Injectable } from '@angular/core';
 import { Place } from '../../shared/models/place.model';
 import { AuthService } from './auth.service';
 import { BehaviorSubject } from 'rxjs';
-import { take, map, tap, delay } from 'rxjs/operators';
+import { take, map, tap, delay, switchMap } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlaceService {
+  private baseUrl = 'https://ionic-bnb.firebaseio.com/';
+
   private _places = new BehaviorSubject<Place[]>([
     new Place(
       'id1',
@@ -42,7 +45,7 @@ export class PlaceService {
     )
   ]);
 
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private http: HttpClient) {}
 
   getPlace(id: string) {
     return this.places.pipe(
@@ -64,6 +67,7 @@ export class PlaceService {
     dateFrom: Date,
     dateTo: Date
   ) {
+    let generatedId: string;
     const newPlace = new Place(
       Math.random().toString(),
       title,
@@ -75,13 +79,22 @@ export class PlaceService {
       this.authService.userId
     );
 
-    return this.places.pipe(
-      take(1),
-      delay(1000),
-      tap(places => {
-        this._places.next(places.concat(newPlace));
+    return this.http
+      .post<{ name: string }>(this.baseUrl + 'offered-places.json', {
+        ...newPlace,
+        id: null
       })
-    );
+      .pipe(
+        switchMap(response => {
+          generatedId = response.name;
+          return this.places;
+        }),
+        take(1),
+        tap(places => {
+          newPlace.id = generatedId;
+          this._places.next(places.concat(newPlace));
+        })
+      );
   }
 
   updatePlace(placeId: string, title: string, description: string) {
