@@ -14,6 +14,7 @@ export class DiscoverPage implements OnInit, OnDestroy {
   loadedPlaces: Place[];
   listedPlaces: Place[];
   relevantPlaces: Place[];
+  isLoading = false;
   private placesSub: Subscription;
   private chosenFilter = 'all';
 
@@ -36,6 +37,13 @@ export class DiscoverPage implements OnInit, OnDestroy {
 
         this.listedPlaces = this.relevantPlaces.slice(1);
       }
+    });
+  }
+
+  ionViewWillEnter() {
+    this.isLoading = true;
+    this.placeService.fetchPlaces().subscribe(() => {
+      this.isLoading = false;
     });
   }
 

@@ -30,10 +30,7 @@
           <ion-item-sliding *ngFor="let offer of offers" #slidingItem>
             <app-offer-item [offer]="offer"> </app-offer-item>
             <ion-item-options side="end">
-              <ion-item-option
-                color="secondary"
-                (click)="onEdit(offer.id, slidingItem)"
-              >
+              <ion-item-option color="secondary">
                 <ion-icon name="create" slot="icon-only"> </ion-icon>
               </ion-item-option>
             </ion-item-options>
